@@ -110,8 +110,10 @@ int main()
                 {
                     sf::CircleShape circle(60);
                     circle.setPointCount(100);
-                    circle.setFillColor(sf::Color::Black);
-                    circle.setPosition(gamepos[i], gamepos[j]);
+                    circle.setFillColor(sf::Color::Transparent);
+                    circle.setPosition(gamepos[i] - 5.0f, gamepos[j] - 5.0f);
+                    circle.setOutlineThickness(5);
+                    circle.setOutlineColor(sf::Color::Black);
                     window.draw(circle);
                 }
             }
