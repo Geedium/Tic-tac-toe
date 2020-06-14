@@ -92,29 +92,23 @@ int main()
             {
                 if (gametable[i][j] == 'X')
                 {
-                    sf::RectangleShape line(sf::Vector2f(150, 5));
-                    sf::RectangleShape line2(sf::Vector2f(150, 5));
-
-                    line.rotate(45);
-                    line2.rotate(-45);
-
-                    line.setFillColor(sf::Color::Black);
-                    line.setPosition(gamepos[i], gamepos[j]);
-                    line2.setFillColor(sf::Color::Black);
-                    line2.setPosition(gamepos[i], gamepos[j] + 105.0f);
-
-                    window.draw(line);
-                    window.draw(line2);
+                    sf::RectangleShape shape(sf::Vector2f(150.0F, 5.0F));
+                    shape.setFillColor(sf::Color::Black);
+                    shape.setPosition(gamepos[i], gamepos[j]);
+                    shape.rotate(45.0F);
+                    window.draw(shape);
+                    shape.rotate(-90.0F);
+                    shape.setPosition(gamepos[i], gamepos[j] + 105.0F);
+                    window.draw(shape);
                 }
                 if (gametable[i][j] == 'O')
                 {
-                    sf::CircleShape circle(60);
-                    circle.setPointCount(100);
-                    circle.setFillColor(sf::Color::Transparent);
-                    circle.setPosition(gamepos[i] - 5.0f, gamepos[j] - 5.0f);
-                    circle.setOutlineThickness(5);
-                    circle.setOutlineColor(sf::Color::Black);
-                    window.draw(circle);
+                    sf::CircleShape shape(60.0F, 100U);
+                    shape.setOutlineColor(sf::Color::Black);
+                    shape.setFillColor(sf::Color::Transparent);
+                    shape.setPosition(gamepos[i] - 5.0F, gamepos[j] - 5.0F);
+                    shape.setOutlineThickness(5.0F);
+                    window.draw(shape);
                 }
             }
         }
