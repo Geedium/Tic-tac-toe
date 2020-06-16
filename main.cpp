@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
                             {
                                 if (gametable[i][j] != 'X' && gametable[i][j] != 'O')
                                 {
-                                    gametable[i][j] = cc;
+                                    gametable[i][j] = !Connected ? 'X' : cc;
 
                                     if (isYourTurn)
                                     {
@@ -312,7 +312,6 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                // DIAG. CHECK
                 if (gametable[0][2] == 'O' && gametable[1][1] == 'O' && gametable[2][0] == 'O')
                 {
                     std::cout << "Player lost." << std::endl;
