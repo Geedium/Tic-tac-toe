@@ -54,6 +54,8 @@ int main(int argc, char* argv[])
                 {
                     if (NTListener.accept(NTMaster) == Socket::Done)
                     {
+                        cout << "Master socket connected." << endl;
+
                         Packet data;
                         data << true;
                         NTMaster.send(data);
@@ -177,7 +179,7 @@ int main(int argc, char* argv[])
                 {
                     cout << "Received a packet containing " << NTRPacket.getDataSize() << " bytes. " << endl;
 
-                    sf::Uint32 x, y;
+                    Uint8 x, y;
                     if (NTRPacket >> x >> y)
                     {
                         QHOtohjnnl[x][y] = (cc == 'X' ? 'O' : 'X');
@@ -215,8 +217,6 @@ int main(int argc, char* argv[])
                             {
                                 if (QHOtohjnnl[i][j] != 'X' && QHOtohjnnl[i][j] != 'O')
                                 {
-                                    isYourTurn = false;
-
                                     QHOtohjnnl[i][j] = (OQudVjuuif.test(NETWORK_ENABLED) ? cc : 'X');
 
                                     if (OQudVjuuif.test(NETWORK_ENABLED) == true)
@@ -225,6 +225,8 @@ int main(int argc, char* argv[])
                                         mMYQdDNBsD << i << j;
                                         NTClient.send(mMYQdDNBsD);
                                     }
+
+                                    isYourTurn = false;
                                 }
                             }
                         }
