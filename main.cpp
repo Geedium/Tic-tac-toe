@@ -3,9 +3,20 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <bitset>
 
 using namespace std;
 using namespace sf;
+
+constexpr Uint16 BOARD_COLS = 3U;
+constexpr Uint16 BOARD_ROWS = 3U;
+constexpr Uint16 BOARD = BOARD_COLS * BOARD_ROWS;
+
+constexpr Uint16 SCREEN_WIDTH = 450U;
+constexpr Uint16 SCREEN_HEIGHT = 450U;
+
+constexpr Uint16 NETWORK_ENABLED = 2U;
+constexpr Uint16 NETWORK_PORT = 2000U;
 
 bool isConnected(TcpSocket& socket)
 {
@@ -14,6 +25,8 @@ bool isConnected(TcpSocket& socket)
 
 int main(int argc, char* argv[])
 {
+    bitset<8U> OQudVjuuif;
+
     TcpListener NTListener;
     TcpSocket NTMaster;
     TcpSocket NTClient;
@@ -23,16 +36,15 @@ int main(int argc, char* argv[])
 
     bool assignedTurn = false;
 
-    bool Connected = false;
     bool isYourTurn = false;
 
     for (signed i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "--server") == 0)
         {
-            if (NTListener.listen(2000) != Socket::Done)
+            if (NTListener.listen(NETWORK_PORT) != Socket::Done)
             {
-                cerr << "Error binding to a port." << endl;
+                cerr << "Error binding to a port!" << endl;
                 return EXIT_FAILURE;
             }
 
@@ -42,15 +54,13 @@ int main(int argc, char* argv[])
                 {
                     if (NTListener.accept(NTMaster) == Socket::Done)
                     {
-                        cout << "Master socket connected." << endl;
-
                         Packet data;
                         data << true;
                         NTMaster.send(data);
                     }
                     else
                     {
-                        cerr << "Error accepting master socket." << endl;
+                        cerr << "Error accepting master socket!" << endl;
                         return EXIT_FAILURE;
                     }
                 }
@@ -59,7 +69,7 @@ int main(int argc, char* argv[])
                     if (NTMaster.receive(NTRPacket) == Socket::Done)
                     {
                         cout << "Received data from a master socket." << endl;
-                        cout << "Redirecting data to a client socket." << endl;
+                        cout << "Redirecting data back to a client socket." << endl;
                         NTClient.send(NTRPacket);
                     }
                 }
@@ -81,7 +91,7 @@ int main(int argc, char* argv[])
                     }
                 }
                 else
-                {               
+                {
                     if (NTClient.receive(NTRPacket) == Socket::Done)
                     {
                         cout << "Received data from a client socket." << endl;
@@ -96,51 +106,48 @@ int main(int argc, char* argv[])
 
         if (strcmp(argv[i], "--client") == 0 && i + 2 <= argc)
         {
-            if (NTClient.connect(IpAddress(argv[i + 1]), 2000) != Socket::Done)
+            if (NTClient.connect(IpAddress(argv[i + 1]), NETWORK_PORT) != Socket::Done)
             {
                 cerr << "Could not connect to server!" << endl;
                 return EXIT_FAILURE;
             }
 
-            Connected = true;
+            OQudVjuuif.set(NETWORK_ENABLED, true);
         }
     }
 
-    sf::RenderWindow window(sf::VideoMode(450, 450), "Tic Tac Toe");
-    std::pair<sf::RectangleShape, bool> tiles[3][3];
+    RenderWindow fWbaSuIYYf(VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Tic-tac-toe");
 
-    char gametable[3][3]{
+    static Vector2f LdmxiSsUGp = Vector2f(SCREEN_WIDTH / BOARD_COLS, SCREEN_HEIGHT / BOARD_ROWS);
+
+    static RectangleShape PBgBBDIgQo[BOARD_COLS][BOARD_ROWS];
+
+    static Uint8 QHOtohjnnl[BOARD_COLS][BOARD_ROWS]
+    {
         '-', '-', '-',
         '-', '-', '-',
         '-', '-', '-'
     };
 
-    float gamepos[3] = {
-        15.0f,
-        15.0f * 11.5f,
-        15.0f * 21.5f
+    static float XlBwVFADsC[BOARD_COLS & BOARD_ROWS] =
+    {
+        15.0F,
+        172.5F,
+        322.5F
     };
 
-    for (int i = 0; i < 3; i++)
+    for (signed i = 0; i < 3; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (signed j = 0; j < 3; j++)
         {
-            sf::Vector2f size(150.0f, 150.0f);
-            if (!tiles[j][i].second)
-            {
-                tiles[j][i] = std::make_pair(sf::RectangleShape(size), true);
-
-                tiles[j][i].first.setPosition(i * 150.0f, j * 150.0f);
-
-                tiles[j][i].first.setOutlineColor(sf::Color::Black);
-                tiles[j][i].first.setOutlineThickness(3);
-
-                tiles[j][i].second = true;
-            }
+            PBgBBDIgQo[j][i] = RectangleShape(LdmxiSsUGp);
+            PBgBBDIgQo[j][i].setPosition(i * LdmxiSsUGp.x, j * LdmxiSsUGp.y);
+            PBgBBDIgQo[j][i].setOutlineColor(Color::Black);
+            PBgBBDIgQo[j][i].setOutlineThickness(3);
         }
     }
 
-    while (window.isOpen() == true)
+    while (fWbaSuIYYf.isOpen() == true)
     {
         if (!assignedTurn)
         {
@@ -173,7 +180,7 @@ int main(int argc, char* argv[])
                     sf::Uint32 x, y;
                     if (NTRPacket >> x >> y)
                     {
-                        gametable[x][y] = (cc == 'X' ? 'O' : 'X');
+                        QHOtohjnnl[x][y] = (cc == 'X' ? 'O' : 'X');
                         cout << "Received an update to board." << endl;
                         isYourTurn = true;
                     }
@@ -181,94 +188,101 @@ int main(int argc, char* argv[])
             }
         }
 
-        sf::Event event;
-        while (window.pollEvent(event))
+        static Event FskESoWlRD;
+
+        while (fWbaSuIYYf.pollEvent(FskESoWlRD))
         {
-            if (event.type == sf::Event::Closed)
-                window.close();
-
-            if (event.type == sf::Event::MouseButtonPressed)
+            switch (FskESoWlRD.type)
             {
-                if (event.mouseButton.button == sf::Mouse::Left)
+            case Event::Closed:
+            {
+                fWbaSuIYYf.close();
+            }
+            case Event::MouseButtonPressed:
+                if (FskESoWlRD.mouseButton.button == Mouse::Left)
                 {
-                    for (sf::Uint32 i = 0; i < 3u; i++)
+                    for (Uint8 i = 0; i < 3u; i++)
                     {
-                        for (sf::Uint32 j = 0; j < 3u; j++)
+                        for (Uint8 j = 0; j < 3u; j++)
                         {
-                            if (!isYourTurn) continue;
+                            if (!isYourTurn)
+                                continue;
 
-                            sf::Vector2i mpos = sf::Mouse::getPosition(window);
-                            sf::Vector2f worldPos = window.mapPixelToCoords(mpos);
+                            const Vector2i SOIUzwyXov = Mouse::getPosition(fWbaSuIYYf);
+                            const Vector2f BgWypoRaaU = fWbaSuIYYf.mapPixelToCoords(SOIUzwyXov);
 
-                            if (tiles[i][j].first.getGlobalBounds().contains(worldPos.y, worldPos.x))
+                            if (PBgBBDIgQo[i][j].getGlobalBounds().contains(BgWypoRaaU.y, BgWypoRaaU.x) == true)
                             {
-                                if (gametable[i][j] != 'X' && gametable[i][j] != 'O')
+                                if (QHOtohjnnl[i][j] != 'X' && QHOtohjnnl[i][j] != 'O')
                                 {
-                                    gametable[i][j] = !Connected ? 'X' : cc;
+                                    isYourTurn = false;
 
-                                    if (isYourTurn)
+                                    QHOtohjnnl[i][j] = (OQudVjuuif.test(NETWORK_ENABLED) ? cc : 'X');
+
+                                    if (OQudVjuuif.test(NETWORK_ENABLED) == true)
                                     {
-                                        Packet data;
-                                        data << i << j;
-
-                                        NTClient.send(data);
-                                        isYourTurn = false;
+                                        Packet mMYQdDNBsD;
+                                        mMYQdDNBsD << i << j;
+                                        NTClient.send(mMYQdDNBsD);
                                     }
                                 }
                             }
                         }
                     }
                 }
+                break;
             }
         }
 
-        window.clear();
+        fWbaSuIYYf.clear();
+
+        for (unsigned i = 0u; i < 3u; i++)
+        {
+            for (unsigned j = 0u; j < 3u; j++)
+            {
+                fWbaSuIYYf.draw(PBgBBDIgQo[i][j]);
+            }
+        }
 
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
             {
-                window.draw(tiles[i][j].first);
-            }
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                if (gametable[i][j] == 'X')
+                if (QHOtohjnnl[i][j] == 'X')
                 {
-                    sf::RectangleShape shape(sf::Vector2f(150.0F, 5.0F));
-                    shape.setFillColor(sf::Color::Black);
-                    shape.setPosition(gamepos[i], gamepos[j]);
+                    RectangleShape shape(Vector2f(150.0F, 5.0F));
+
+                    shape.setFillColor(Color::Black);
+
+                    shape.setPosition(XlBwVFADsC[i], XlBwVFADsC[j]);
                     shape.rotate(45.0F);
-                    window.draw(shape);
+                    fWbaSuIYYf.draw(shape);
                     shape.rotate(-90.0F);
-                    shape.setPosition(gamepos[i], gamepos[j] + 105.0F);
-                    window.draw(shape);
+                    shape.setPosition(XlBwVFADsC[i], XlBwVFADsC[j] + 105.0F);
+                    fWbaSuIYYf.draw(shape);
                 }
-                if (gametable[i][j] == 'O')
+                if (QHOtohjnnl[i][j] == 'O')
                 {
                     sf::CircleShape shape(60.0F, 100U);
                     shape.setOutlineColor(sf::Color::Black);
                     shape.setFillColor(sf::Color::Transparent);
-                    shape.setPosition(gamepos[i] - 5.0F, gamepos[j] - 5.0F);
+                    shape.setPosition(XlBwVFADsC[i] - 5.0F, XlBwVFADsC[j] - 5.0F);
                     shape.setOutlineThickness(5.0F);
-                    window.draw(shape);
+                    fWbaSuIYYf.draw(shape);
                 }
             }
         }
 
-        if (!Connected && !isYourTurn)
+        if (!OQudVjuuif.test(NETWORK_ENABLED) && !isYourTurn)
         {
             int nx = rand() % 3;
             int ny = rand() % 3;
 
-            if (gametable[nx][ny] == '-')
+            if (QHOtohjnnl[nx][ny] == '-')
             {
-                gametable[nx][ny] = 'O';
+                QHOtohjnnl[nx][ny] = 'O';
 
-                if (gametable[nx - 1][ny] == 'O' && gametable[nx + 1][ny] == 'O')
+                if (QHOtohjnnl[nx - 1][ny] == 'O' && QHOtohjnnl[nx + 1][ny] == 'O')
                 {
                     std::cout << "NPC wins." << std::endl;
                 }
@@ -283,105 +297,106 @@ int main(int argc, char* argv[])
         {
             for (int j = 0; j < 3; j++)
             {
-                if (gametable[i][j] == '-') hasMovesLeft = true;
+                if (QHOtohjnnl[i][j] == '-') hasMovesLeft = true;
 
                 if (i == 0)
                 {
-                    if (gametable[0][j] == 'O' && gametable[1][j] == 'O' && gametable[2][j] == 'O')
+                    if (QHOtohjnnl[0][j] == 'O' && QHOtohjnnl[1][j] == 'O' && QHOtohjnnl[2][j] == 'O')
                     {
                         std::cout << "Player lost." << std::endl;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
-                                gametable[i][j] = '-';
+                                QHOtohjnnl[i][j] = '-';
                             }
                         }
                     }
 
-                    if (gametable[0][j] == 'X' && gametable[1][j] == 'X' && gametable[2][j] == 'X')
+                    if (QHOtohjnnl[0][j] == 'X' && QHOtohjnnl[1][j] == 'X' && QHOtohjnnl[2][j] == 'X')
                     {
                         std::cout << "Player win." << std::endl;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
-                                gametable[i][j] = '-';
+                                QHOtohjnnl[i][j] = '-';
                             }
                         }
                     }
                 }
 
-                if (gametable[0][2] == 'O' && gametable[1][1] == 'O' && gametable[2][0] == 'O')
+                // DIAG. CHECK
+                if (QHOtohjnnl[0][2] == 'O' && QHOtohjnnl[1][1] == 'O' && QHOtohjnnl[2][0] == 'O')
                 {
                     std::cout << "Player lost." << std::endl;
                     for (int i = 0; i < 3; i++)
                     {
                         for (int j = 0; j < 3; j++)
                         {
-                            gametable[i][j] = '-';
+                            QHOtohjnnl[i][j] = '-';
                         }
                     }
                 }
 
-                if (gametable[0][0] == 'O' && gametable[1][1] == 'O' && gametable[2][2] == 'O')
+                if (QHOtohjnnl[0][0] == 'O' && QHOtohjnnl[1][1] == 'O' && QHOtohjnnl[2][2] == 'O')
                 {
                     std::cout << "Player lost." << std::endl;
                     for (int i = 0; i < 3; i++)
                     {
                         for (int j = 0; j < 3; j++)
                         {
-                            gametable[i][j] = '-';
+                            QHOtohjnnl[i][j] = '-';
                         }
                     }
                 }
 
-                if (gametable[0][2] == 'X' && gametable[1][1] == 'X' && gametable[2][0] == 'X')
+                if (QHOtohjnnl[0][2] == 'X' && QHOtohjnnl[1][1] == 'X' && QHOtohjnnl[2][0] == 'X')
                 {
                     std::cout << "Player win." << std::endl;
                     for (int i = 0; i < 3; i++)
                     {
                         for (int j = 0; j < 3; j++)
                         {
-                            gametable[i][j] = '-';
+                            QHOtohjnnl[i][j] = '-';
                         }
                     }
                 }
 
-                if (gametable[0][0] == 'X' && gametable[1][1] == 'X' && gametable[2][2] == 'X')
+                if (QHOtohjnnl[0][0] == 'X' && QHOtohjnnl[1][1] == 'X' && QHOtohjnnl[2][2] == 'X')
                 {
                     std::cout << "Player win." << std::endl;
                     for (int i = 0; i < 3; i++)
                     {
                         for (int j = 0; j < 3; j++)
                         {
-                            gametable[i][j] = '-';
+                            QHOtohjnnl[i][j] = '-';
                         }
                     }
                 }
 
                 if (j == 0)
                 {
-                    if (gametable[i][0] == 'O' && gametable[i][1] == 'O' && gametable[i][2] == 'O')
+                    if (QHOtohjnnl[i][0] == 'O' && QHOtohjnnl[i][1] == 'O' && QHOtohjnnl[i][2] == 'O')
                     {
                         std::cout << "Player lost." << std::endl;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
-                                gametable[i][j] = '-';
+                                QHOtohjnnl[i][j] = '-';
                             }
                         }
                     }
 
-                    if (gametable[i][0] == 'X' && gametable[i][1] == 'X' && gametable[i][2] == 'X')
+                    if (QHOtohjnnl[i][0] == 'X' && QHOtohjnnl[i][1] == 'X' && QHOtohjnnl[i][2] == 'X')
                     {
                         std::cout << "Player win." << std::endl;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
-                                gametable[i][j] = '-';
+                                QHOtohjnnl[i][j] = '-';
                             }
                         }
                     }
@@ -396,12 +411,12 @@ int main(int argc, char* argv[])
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    gametable[i][j] = '-';
+                    QHOtohjnnl[i][j] = '-';
                 }
             }
         }
 
-        window.display();
+        fWbaSuIYYf.display();
     }
 
     NTClient.disconnect();
