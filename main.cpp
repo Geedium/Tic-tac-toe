@@ -9,18 +9,248 @@ using namespace std;
 using namespace sf;
 
 constexpr Uint16 BOARD_COLS = 3U;
-constexpr Uint16 BOARD_ROWS = 3U;
+constexpr Uint16 BOARD_ROWS = BOARD_COLS;
 constexpr Uint16 BOARD = BOARD_COLS * BOARD_ROWS;
 
 constexpr Uint16 SCREEN_WIDTH = 450U;
-constexpr Uint16 SCREEN_HEIGHT = 450U;
+constexpr Uint16 SCREEN_HEIGHT = SCREEN_WIDTH;
 
 constexpr Uint16 NETWORK_ENABLED = 2U;
 constexpr Uint16 NETWORK_PORT = 2000U;
 
+static signed Weights[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+struct sc
+{
+    int i;
+    int v;
+};
+
+bool isLost(Uint8 data[][3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (i == 0)
+            {
+                if (data[0][j] == 'O' && data[1][j] == 'O' && data[2][j] == 'O')
+                {
+                    std::cout << "Player lost." << std::endl;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            data[i][j] = '-';
+                        }
+                    }
+                    return true;
+                }
+
+                if (data[0][j] == 'X' && data[1][j] == 'X' && data[2][j] == 'X')
+                {
+                    std::cout << "Player win." << std::endl;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            data[i][j] = '-';
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            if (data[0][2] == 'O' && data[1][1] == 'O' && data[2][0] == 'O')
+            {
+                std::cout << "Player lost." << std::endl;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        data[i][j] = '-';
+                    }
+                }
+                return true;
+            }
+
+            if (data[0][0] == 'O' && data[1][1] == 'O' && data[2][2] == 'O')
+            {
+                std::cout << "Player lost." << std::endl;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        data[i][j] = '-';
+                    }
+                }
+                return true;
+            }
+
+            if (data[0][2] == 'X' && data[1][1] == 'X' && data[2][0] == 'X')
+            {
+                std::cout << "Player win." << std::endl;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        data[i][j] = '-';
+                    }
+                }
+                return true;
+            }
+
+            if (data[0][0] == 'X' && data[1][1] == 'X' && data[2][2] == 'X')
+            {
+                std::cout << "Player win." << std::endl;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        data[i][j] = '-';
+                    }
+                }
+                return true;
+            }
+
+            if (j == 0)
+            {
+                if (data[i][0] == 'O' && data[i][1] == 'O' && data[i][2] == 'O')
+                {
+                    std::cout << "Player lost." << std::endl;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            data[i][j] = '-';
+                        }
+                    }
+                    return true;
+                }
+
+                if (data[i][0] == 'X' && data[i][1] == 'X' && data[i][2] == 'X')
+                {
+                    std::cout << "Player win." << std::endl;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            data[i][j] = '-';
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isMovesLeft(const Uint8 data[][3])
+{
+    for (unsigned i{ 0 }; i < BOARD; i++)
+    {
+        unsigned x = i % BOARD_COLS;
+        unsigned y = i / BOARD_ROWS;
+
+        if (data[x][y] == '-')
+            return true;
+    }
+    cout << "It's a tie!" << endl;
+    return false;
+}
+
 bool isConnected(TcpSocket& socket)
 {
     return socket.getRemoteAddress() != IpAddress::None;
+}
+
+struct Range
+{
+    int a;
+    int b;
+    int c;
+};
+
+sc Compute()
+{
+    Range index{ 0,0,0 };
+
+    int iRs{ 0 };
+
+    int s_y = Weights[0] + Weights[3] + Weights[6];
+    int s_y2 = Weights[1] + Weights[4] + Weights[7];
+    int s_y3 = Weights[2] + Weights[5] + Weights[8];
+
+    if (s_y > iRs)
+    {
+        index = { 0, 3, 6 };
+        iRs = s_y;
+    }
+
+    if (s_y2 > iRs)
+    {
+        index = { 1, 4, 7 };
+        iRs = s_y2;
+    }
+
+    if (s_y3 >= iRs)
+    {
+        index = { 2, 5, 8 };
+        iRs = s_y3;
+    }
+
+    int s_x = Weights[0] + Weights[1] + Weights[2];
+    int s_x2 = Weights[3] + Weights[4] + Weights[5];
+    int s_x3 = Weights[6] + Weights[7] + Weights[8];
+
+    if (s_x > iRs)
+    {
+        index = { 0,1,2 };
+        iRs = s_x;
+    }
+
+    if (s_x2 > iRs)
+    {
+        index = { 3,4,5 };
+        iRs = s_x2;
+    }
+
+    if (s_x3 >= iRs)
+    {
+        index = { 6,7,8 };
+        iRs = s_x3;
+    }
+
+    int s_xy = Weights[0] + Weights[4] + Weights[8];
+
+    if (s_xy > iRs)
+    {
+        index = { 0, 4, 8 };
+        iRs = s_xy;
+    }
+
+    int s_xy2 = Weights[2] + Weights[4] + Weights[6];
+
+    if (s_xy2 > iRs)
+    {
+        index = { 2, 4, 6 };
+        iRs = s_xy2;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        int n[3] = { index.a, index.b, index.c };
+        int g = n[i];
+
+        if (Weights[g] == 0)
+        {
+            return { g, iRs };
+        }
+    }
+
+    return { rand() % 9, 0 };
 }
 
 int main(int argc, char* argv[])
@@ -32,13 +262,9 @@ int main(int argc, char* argv[])
     TcpSocket NTClient;
     Packet NTRPacket;
 
-    unsigned char cc = '-';
-
     bool assignedTurn = false;
 
-    bool isYourTurn = false;
-
-    for (signed i = 0; i < argc; i++)
+    for (signed i{ 0 }; i < argc; i++)
     {
         if (strcmp(argv[i], "--server") == 0)
         {
@@ -116,6 +342,16 @@ int main(int argc, char* argv[])
 
             OQudVjuuif.set(NETWORK_ENABLED, true);
         }
+    }
+
+    bool isYourTurn = true;
+    unsigned char cc = 'X';
+    int origin = 0;
+
+    if (OQudVjuuif.test(NETWORK_ENABLED))
+    {
+        isYourTurn = false;
+        cc = '-';
     }
 
     RenderWindow fWbaSuIYYf(VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Tic-tac-toe");
@@ -225,6 +461,10 @@ int main(int argc, char* argv[])
                                         mMYQdDNBsD << i << j;
                                         NTClient.send(mMYQdDNBsD);
                                     }
+                                    else
+                                    {
+                                        Weights[i + 3 * j] = +1;
+                                    }
 
                                     isYourTurn = false;
                                 }
@@ -277,144 +517,26 @@ int main(int argc, char* argv[])
 
         if (!OQudVjuuif.test(NETWORK_ENABLED) && !isYourTurn)
         {
-            int nx = rand() % 3;
-            int ny = rand() % 3;
+            sc move = Compute();
+            int nx = move.i % 3;
+            int ny = move.i / 3;
 
             if (QHOtohjnnl[nx][ny] == '-')
             {
                 QHOtohjnnl[nx][ny] = 'O';
-
-                if (QHOtohjnnl[nx - 1][ny] == 'O' && QHOtohjnnl[nx + 1][ny] == 'O')
-                {
-                    std::cout << "NPC wins." << std::endl;
-                }
-
+                Weights[nx + 3 * ny] = -1;
                 isYourTurn = true;
             }
         }
 
-        bool hasMovesLeft = false;
-
-        for (int i = 0; i < 3; i++)
+        if (isLost(QHOtohjnnl) || !isMovesLeft(QHOtohjnnl))
         {
-            for (int j = 0; j < 3; j++)
+            for (int i = 0; i < 9; i++)
             {
-                if (QHOtohjnnl[i][j] == '-') hasMovesLeft = true;
-
-                if (i == 0)
-                {
-                    if (QHOtohjnnl[0][j] == 'O' && QHOtohjnnl[1][j] == 'O' && QHOtohjnnl[2][j] == 'O')
-                    {
-                        std::cout << "Player lost." << std::endl;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                QHOtohjnnl[i][j] = '-';
-                            }
-                        }
-                    }
-
-                    if (QHOtohjnnl[0][j] == 'X' && QHOtohjnnl[1][j] == 'X' && QHOtohjnnl[2][j] == 'X')
-                    {
-                        std::cout << "Player win." << std::endl;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                QHOtohjnnl[i][j] = '-';
-                            }
-                        }
-                    }
-                }
-
-                // DIAG. CHECK
-                if (QHOtohjnnl[0][2] == 'O' && QHOtohjnnl[1][1] == 'O' && QHOtohjnnl[2][0] == 'O')
-                {
-                    std::cout << "Player lost." << std::endl;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        for (int j = 0; j < 3; j++)
-                        {
-                            QHOtohjnnl[i][j] = '-';
-                        }
-                    }
-                }
-
-                if (QHOtohjnnl[0][0] == 'O' && QHOtohjnnl[1][1] == 'O' && QHOtohjnnl[2][2] == 'O')
-                {
-                    std::cout << "Player lost." << std::endl;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        for (int j = 0; j < 3; j++)
-                        {
-                            QHOtohjnnl[i][j] = '-';
-                        }
-                    }
-                }
-
-                if (QHOtohjnnl[0][2] == 'X' && QHOtohjnnl[1][1] == 'X' && QHOtohjnnl[2][0] == 'X')
-                {
-                    std::cout << "Player win." << std::endl;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        for (int j = 0; j < 3; j++)
-                        {
-                            QHOtohjnnl[i][j] = '-';
-                        }
-                    }
-                }
-
-                if (QHOtohjnnl[0][0] == 'X' && QHOtohjnnl[1][1] == 'X' && QHOtohjnnl[2][2] == 'X')
-                {
-                    std::cout << "Player win." << std::endl;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        for (int j = 0; j < 3; j++)
-                        {
-                            QHOtohjnnl[i][j] = '-';
-                        }
-                    }
-                }
-
-                if (j == 0)
-                {
-                    if (QHOtohjnnl[i][0] == 'O' && QHOtohjnnl[i][1] == 'O' && QHOtohjnnl[i][2] == 'O')
-                    {
-                        std::cout << "Player lost." << std::endl;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                QHOtohjnnl[i][j] = '-';
-                            }
-                        }
-                    }
-
-                    if (QHOtohjnnl[i][0] == 'X' && QHOtohjnnl[i][1] == 'X' && QHOtohjnnl[i][2] == 'X')
-                    {
-                        std::cout << "Player win." << std::endl;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                QHOtohjnnl[i][j] = '-';
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!hasMovesLeft)
-        {
-            std::cout << "It's a tie." << std::endl;
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    QHOtohjnnl[i][j] = '-';
-                }
+                int x = i % 3;
+                int y = i / 3;
+                QHOtohjnnl[x][y] = '-';
+                Weights[i] = 0;
             }
         }
 
